@@ -1,0 +1,72 @@
+import pandas as pd
+import numpy as np
+import math
+import random
+import re
+from jmetal.core.problem import PermutationProblem
+from jmetal.core.solution import PermutationSolution
+
+class VRP():
+
+    def __init__(self, instance: str = None):
+        """初始化属性instance"""
+        super(VRP, self).__init__()
+        """super()可以避免直接使用父类的名字.主要用于多重继承"""
+        matrix, demand, dimension, max_no_of_vehicle, vehicle_capacity = self.__read_from_file(instance)
+
+        """初始化属性"""
+        # self.distance_matrix = distance_matrix
+        self.distance_matrix = matrix
+        self.demand = demand
+        self.max_no_of_vehicle = max_no_of_vehicle
+        self.vehicle_capacity = vehicle_capacity
+        self.obj_labels = ['no of vehicles', 'distance']
+        self.number_of_constraints = 0
+
+    def __read_from_file(self, filename: str):
+        global max_no_of_vehicle
+        file = open(filename)
+        xcoordinate = []
+        ycoordinate = []
+        demand = []
+        readytime = []
+        duetime = []
+        servicetime = []
+        custtno = []
+        while True:
+            try:
+                line = file.readline().split()  # 按行读取，再以空格为标识，划分字符串
+                if (line != []):  # 行不为空
+                    if ((len(line) == 2) & (line[0].isdigit())):  # line长度为2且line[0].isdigit() 第一个字符是数字
+                        max_no_of_vehicle = int(line[0])  # 最大车辆数就是line中的第一个元素
+                        vehicle_capacity = int(line[1])  # 车辆载重是line中第二个元素
+
+                    elif ((len(line) >= 2) & (line[0].isdigit())):
+                        custtno.append(int(line[0]))
+                        xcoordinate.append(int(line[1]))  # 在x坐标后加上下一行的x坐标
+                        ycoordinate.append(int(line[2]))  # 在Y坐标后加上下一行的坐标
+                        demand.append(int(line[3]))  # 录入下一个点的需求量
+                        readytime.append(int(line[4]))
+                        duetime.append(int(line[5]))
+                        servicetime.append(int(line[6]))
+                if ((xcoordinate != []) & (len(line) == 0)):  # 如果坐标为空 或者下一行的长度为0（即为空），则跳出循环
+                    break
+            except EOFError:
+                pass
+        file.close()
+
+        dimension = len(demand) - 1
+        matrix = [[-1] * (dimension + 1) for _ in range(dimension + 1)]
+        for k in range(dimension + 1):
+            for j in range(dimension + 1):
+                dist = math.sqrt((xcoordinate[k] - xcoordinate[j]) ** 2 + (ycoordinate[k] - ycoordinate[j]) ** 2)
+                dist = round(dist)
+                matrix[k][j] = dist  # 得到距离矩阵
+        print("matrix is:",matrix)
+        return matrix, demand, dimension, max_no_of_vehicle, vehicle_capacity
+
+
+
+
+
+problem = VRP('./C1_2_1.txt')
